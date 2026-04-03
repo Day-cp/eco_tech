@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // AQUI SE COLOCA EL IP IPv4 QUE SE OBTIENE AL INGRESAR EL COMANDO ipconfig en CMD
-const BASE_URL = "http://192.168.137.31:8000/api/";
+const BASE_URL = "http://192.168.101.8:8000/api/";
 
 // ========================
 //  LOGIN 
@@ -29,9 +29,16 @@ export const loginService = async (email, password) => {
 // =========
 //  OBTENER
 // =========
-export const getProducts = async (token) => {
+export const getProducts = async (token, tipo = null) => {
     try {
-        const response = await fetch(`${BASE_URL}productos/`, {
+        let url = `${BASE_URL}productos/`;
+
+        // 🔥 agregar query param si existe
+        if (tipo) {
+            url += `?tipo=${tipo}`;
+        }
+
+        const response = await fetch(url, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -39,16 +46,17 @@ export const getProducts = async (token) => {
             },
         });
 
-        const text = await response.text(); // Para depuración
+        const text = await response.text();
         console.log("RESPUESTA CRUDA:", text);
 
         const data = JSON.parse(text);
 
         if (!response.ok) {
-            throw new Error(data.error || "Error al obtener productos");
+            throw new Error(data.error || "Error al obtener datos");
         }
 
         return data;
+
     } catch (error) {
         console.log("ERROR EN API:", error);
         throw error;
@@ -56,18 +64,18 @@ export const getProducts = async (token) => {
 };
 
 // ========================
-//  CRUD DE tareas
+//  CRUD DE productos
 // ========================
 export const productService = {
     getAll: (token) =>
-        fetch(`${BASE_URL}tareas/`, {
+        fetch(`${BASE_URL}productos/`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         }).then((res) => res.json()),
 
     create: (token, data) =>
-        fetch(`${BASE_URL}tareas/`, {
+        fetch(`${BASE_URL}productos/`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -77,7 +85,7 @@ export const productService = {
         }).then((res) => res.json()),
 
     update: (token, id, data) =>
-        fetch(`${BASE_URL}tareas/${id}/`, {
+        fetch(`${BASE_URL}productos/${id}/`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -87,7 +95,7 @@ export const productService = {
         }).then((res) => res.json()),
 
     delete: (token, id) =>
-        fetch(`${BASE_URL}tareas/${id}/`, {
+        fetch(`${BASE_URL}productos/${id}/`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -98,7 +106,7 @@ export const productService = {
 export const createProduct = async (data, token) => {
     try {
         const response = await fetch(
-            `${BASE_URL}tareas/`,
+            `${BASE_URL}productos/`,
             {
                 method: "POST",
                 headers: {
@@ -125,7 +133,7 @@ export const createProduct = async (data, token) => {
 export const deleteProduct = async (productId, token) => {
     try {
         const response = await fetch(
-            `${BASE_URL}tareas/${productId}/`,
+            `${BASE_URL}productos/${productId}/`,
             {
                 method: "DELETE",
                 headers: {
@@ -149,7 +157,7 @@ export const deleteProduct = async (productId, token) => {
 export const updateProduct = async (productId, data, token) => {
     try {
         const response = await fetch(
-            `${BASE_URL}tareas/${productId}/`,
+            `${BASE_URL}productos/${productId}/`,
             {
                 method: "PUT",
                 headers: {

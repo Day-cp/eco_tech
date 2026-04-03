@@ -2,7 +2,7 @@ import React, {useContext} from "react";
 import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
 import { AuthContext } from "../context/AuthContext";
 
-const homeScreen = ({navegation}) => {
+const homeScreen = ({navigation}) => {
     const {logout} = useContext(AuthContext);
 
     return (
@@ -14,7 +14,7 @@ const homeScreen = ({navegation}) => {
             </View>
             
             <View style={styles.menuGrid}>
-                <TouchableOpacity style={styles.card} onPress={() => navegation.navigate('Products')}>
+                <TouchableOpacity style={styles.card} onPress={() => setScreen('Products')}>
                     <Text style={styles.icon}>⚜</Text>
                     <Text style={styles.cardText}>Gestionar Productos</Text>
                 </TouchableOpacity>

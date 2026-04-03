@@ -3,6 +3,7 @@ import { AuthProvider, AuthContext } from './src/context/AuthContext';
 import LoginScreen from './src/screens/LoginScreen';
 import ListScreen from './src/screens/ListScreen';
 import UserDataScreen from './src/screens/UserDataScreen';
+import SolicitudesScreen from './src/screens/SolicitudesScreen';
 
 const AppContent = () => {
   const { userToken, isLoading } = useContext(AuthContext);
@@ -14,6 +15,10 @@ const AppContent = () => {
 
   if (screen === "user") {
     return <UserDataScreen setScreen={setScreen} />;
+  }
+
+  if (screen === "solicitudes") {
+    return <SolicitudesScreen setScreen={setScreen} />;
   }
 
   if (screen === "products") {

@@ -11,31 +11,24 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     // 🔐 LOGIN
-    const login = async (token) => {
-        try {
-            const auth = getAuth();
-            const firebaseUser = auth.currentUser;
+const login = async (token, firebaseUser) => {
+    try {
+        setUserToken(token);
+        await AsyncStorage.setItem('userToken', token);
 
-            setUserToken(token);
-            await AsyncStorage.setItem('userToken', token);
+        const userData = {
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            rol: "aprendiz"
+        };
 
-            if (firebaseUser) {
-                const userData = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    rol: "aprendiz"
-                };
+        setUser(userData);
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
 
-                setUser(userData);
-
-                // 🔥 GUARDAR USUARIO TAMBIÉN
-                await AsyncStorage.setItem('userData', JSON.stringify(userData));
-            }
-
-        } catch (error) {
-            console.log("ERROR LOGIN:", error);
-        }
-    };
+    } catch (error) {
+        console.log("ERROR LOGIN:", error);
+    }
+};
 
     // 🚪 LOGOUT
     const logout = async () => {
