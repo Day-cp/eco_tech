@@ -105,27 +105,35 @@ export const productService = {
 
 export const createProduct = async (data, token) => {
     try {
-        const response = await fetch(
-            `${BASE_URL}productos/`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify(data),
-            }
-        );
+        console.log("📤 DATA ENVIADA:", data);
 
-        const result = await response.json();
+        const response = await fetch(`${BASE_URL}productos/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+
+        const text = await response.text(); // 🔥 VER RESPUESTA REAL
+        console.log("📥 RESPUESTA CRUDA CREATE:", text);
+
+        const result = JSON.parse(text);
 
         if (!response.ok) {
-            throw new Error(result.error || "Error al crear producto");
+            throw new Error(
+                result.error ||
+                result.detail ||
+                result.mensaje ||
+                JSON.stringify(result)
+            );
         }
 
         return result;
+
     } catch (error) {
-        console.log("ERROR CREATE:", error);
+        console.log("❌ ERROR CREATE:", error);
         throw error;
     }
 };
@@ -239,6 +247,45 @@ export const uploadProfilePhoto = async (imageUri, token) => {
 
     } catch (error) {
         console.log("ERROR UPLOAD:", error);
+        throw error;
+    }
+};
+
+export const getChatHistoryService = async (token) => {
+    try {
+        const response = await fetch(`${BASE_URL}chat/historial/`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`}
+        });
+        if (!response.ok) throw new Error("Error cargando historial del chat");
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+
+// ========================
+//  SERVICIOS DE CHAT
+// ========================
+
+export const getMiPerfilService = async (token) => {
+    console.log("TOKEN ENVIADO:", token); // Si sale undefined, el problema es el AuthContext
+    try {
+        const response = await fetch(`${BASE_URL}perfil/foto/`, { 
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`, // Verifica que no falte la palabra 'Bearer'
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al obtener perfil para el chat");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.log("ERROR GET_MI_PERFIL:", error);
         throw error;
     }
 };

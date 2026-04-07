@@ -1,88 +1,167 @@
-import React, {useContext} from "react";
-import {View, Text, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    SafeAreaView
+} from 'react-native';
 import { AuthContext } from "../context/AuthContext";
+import { doc, getDoc } from "firebase/firestore"; 
+import { db } from "../Firebase/firebaseConfig"; 
 
-const homeScreen = ({navigation}) => {
-    const {logout} = useContext(AuthContext);
+const HomeScreen = ({ setScreen }) => {
+    const { user } = useContext(AuthContext);
+    
+    const [userData, setUserData] = useState({
+        foto: null,
+        rol: "Cargando..."
+    });
+
+    useEffect(() => {
+        const fetchExtraData = async () => {
+            try {
+                if (user?.uid) {
+                    const userRef = doc(db, "perfiles", user.uid);
+                    const userSnap = await getDoc(userRef);
+
+                    if (userSnap.exists()) {
+                        const data = userSnap.data();
+                        setUserData({
+                            foto: data.foto_url?.replace(".webp", ".jpg"),
+                            rol: data.rol || "Sin Rol"
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log("Error trayendo datos en Home:", error);
+            }
+        };
+
+        fetchExtraData();
+    }, [user]);
 
     return (
-        /* Agregué el style container aquí para que el fondo funcione en toda la pantalla */
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.welcome}>Hola, desarrollador</Text>
-                <Text style={styles.sub}>Bienvenido al panel principal</Text>
+        <SafeAreaView style={styles.container}>
+
+            {/* 🔹 HEADER COMO CAJÓN CENTRADO */}
+            <View style={styles.header}>
+                <Image
+                    source={{ 
+                        uri: userData.foto  
+                    }}
+                    style={styles.avatar}
+                />
+                <Text style={styles.name}>{user?.email || "Usuario"}</Text>
+                <Text style={styles.welcome}>ADSO - {userData.rol.toUpperCase()}</Text>
             </View>
-            
-            <View style={styles.menuGrid}>
+
+            {/* 🔹 ACCIONES EN GRID */}
+            <View style={styles.grid}>
+                <TouchableOpacity style={styles.card} onPress={() => setScreen('user')}>
+                    <Text style={styles.icon}>👤</Text>
+                    <Text style={styles.cardText}>Perfil</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.card} onPress={() => setScreen('Products')}>
-                    <Text style={styles.icon}>⚜</Text>
-                    <Text style={styles.cardText}>Gestionar Productos</Text>
+                    <Text style={styles.icon}>📦</Text>
+                    <Text style={styles.cardText}>Productos</Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.card} onPress={logout}>
-                    <Text style={styles.icon}>🚪</Text>
-                    <Text style={styles.cardText}>Cerrar Sesión</Text>
+
+                <TouchableOpacity style={styles.card} onPress={() => setScreen('solicitudes')}>
+                    <Text style={styles.icon}>📄</Text>
+                    <Text style={styles.cardText}>Solicitudes</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.card} onPress={() => setScreen('Chat')}>
+                    <Text style={styles.icon}>💬</Text>
+                    <Text style={styles.cardText}>Chat</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+
+        </SafeAreaView>
     );
 };
+
+export default HomeScreen;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f0f5ff', // Fondo azul muy claro
-        paddingTop: 40,
+        backgroundColor: '#F1F5F9',
     },
-    welcome: {
-        fontSize: 30,
-        fontWeight: '700', // Más grueso para que resalte
-        color: '#003366', // Azul oscuro profundo
-        marginBottom: 5,
-        marginHorizontal: 25,
-        fontFamily: 'sans-serif-medium', // Tipo de letra más moderno
+
+    /* 🔹 HEADER AJUSTADO */
+    header: {
+        alignItems: 'center',
+        paddingVertical: 25,
+        backgroundColor: '#316488',
+        marginTop: 40, // Lo baja de la parte superior
+        marginHorizontal: 20, // Lo centra a lo ancho dejando espacio a los lados
+        borderRadius: 25, // Bordes redondeados en todas las esquinas para efecto "cajón"
+        
+        // Sombra para que flote
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
     },
-    sub: {
+
+    avatar: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        marginBottom: 10,
+        borderWidth: 3,
+        borderColor: '#fff',
+    },
+
+    name: {
         fontSize: 16,
-        color: '#557ca3', // Azul grisáceo
-        marginHorizontal: 25,
-        marginBottom: 30,
-        fontFamily: 'sans-serif-light',
+        fontWeight: 'bold',
+        color: '#FFFFFF',
     },
-    menuGrid: {
+
+    welcome: {
+        fontSize: 12,
+        color: '#E2E8F0',
+        fontWeight: '700',
+        marginTop: 4,
+    },
+
+    /* 🔹 GRID */
+    grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-evenly',
-        paddingHorizontal: 10,
-    },
-    card: {
-        width: '42%',
-        backgroundColor: '#ffffff',
-        borderRadius: 25, // Bordes muy redondeados como pediste
+        justifyContent: 'space-between',
         padding: 20,
+        marginTop: 10, // Espacio entre el header y los botones
+    },
+
+    card: {
+        width: '48%',
+        backgroundColor: '#FFFFFF',
+        padding: 20,
+        borderRadius: 15,
+        marginBottom: 15,
         alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 12,
-        // Sombra más suave y azulada
-        shadowColor: '#004aad',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 6,
-        borderWidth: 1,
-        borderColor: '#e1e9f5',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
     },
+
     icon: {
-        fontSize: 35,
-        marginBottom: 10,
+        fontSize: 28,
+        marginBottom: 8,
     },
+
     cardText: {
         fontSize: 14,
-        fontWeight: 'bold',
-        color: '#0056b3', // Azul vibrante para los botones
-        textAlign: 'center',
-        fontFamily: 'sans-serif-condensed',
-    }
-})
-
-export default homeScreen;
+        fontWeight: '600',
+        color: '#334155',
+    },
+});
